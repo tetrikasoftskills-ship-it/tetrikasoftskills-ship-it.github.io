@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEURAL AUDIO INTERFACE // SOUND CALIBRATION</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --neon-purple: #bc13fe;
+    --neon-blue: #00f2ff;
+    --neon-green: #00ff88;
+    --neon-red: #ff2d55;
+    --neon-yellow: #ffe500;
+    --bg-dark: #050508;
+    --grid-color: rgba(188,19,254,.08);
+    --text-primary: #e0d6ff;
+    --text-dim: #6a5f8a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Rajdhani',sans-serif;
+    background:var(--bg-dark); color:var(--text-primary);
+    min-height:100vh; overflow-x:hidden; position:relative;
+  }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background-image:linear-gradient(var(--grid-color) 1px,transparent 1px),linear-gradient(90deg,var(--grid-color) 1px,transparent 1px);
+    background-size:60px 60px; animation:gridPulse 8s ease-in-out infinite;
+    pointer-events:none; z-index:0;
+  }
+  body::after {
+    content:''; position:fixed; top:-20%; left:50%; transform:translateX(-50%);
+    width:80vw; height:60vh;
+    background:radial-gradient(ellipse,rgba(188,19,254,.12) 0%,transparent 70%);
+    pointer-events:none; z-index:0; animation:glowPulse 5s ease-in-out infinite alternate;
+  }
+  @keyframes gridPulse{0%,100%{opacity:.6}50%{opacity:1}}
+  @keyframes glowPulse{0%{opacity:.5;transform:translateX(-50%) scale(1)}100%{opacity:1;transform:translateX(-50%) scale(1.15)}}
+
+  .screen { position:relative; z-index:1; min-height:100vh; display:none; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
+  .screen.active { display:flex; }
+
+  /* ── WELCOME ── */
+  #screen-welcome { text-align:center; gap:32px; }
+  .system-badge { font-family:'Orbitron',monospace; font-size:11px; letter-spacing:.35em; color:var(--neon-blue); border:1px solid rgba(0,242,255,.3); padding:6px 20px; display:inline-block; }
+  .welcome-title {
+    font-family:'Orbitron',monospace; font-size:clamp(32px,6vw,72px); font-weight:900;
+    line-height:1.05; letter-spacing:.04em;
+    background:linear-gradient(135deg,#fff 0%,var(--neon-purple) 50%,var(--neon-blue) 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    filter:drop-shadow(0 0 30px rgba(188,19,254,.5));
+  }
+  .welcome-sub { font-size:18px; color:var(--text-dim); letter-spacing:.15em; text-transform:uppercase; font-weight:300; }
+  .pulse-text { font-family:'Orbitron',monospace; font-size:clamp(13px,2vw,16px); color:var(--neon-blue); letter-spacing:.2em; animation:textPulse 2s ease-in-out infinite; }
+  @keyframes textPulse{0%,100%{opacity:.4}50%{opacity:1;text-shadow:0 0 20px var(--neon-blue)}}
+  .btn-start {
+    font-family:'Orbitron',monospace; font-size:16px; font-weight:700; letter-spacing:.3em;
+    color:var(--bg-dark); background:linear-gradient(135deg,var(--neon-purple),var(--neon-blue));
+    border:none; padding:16px 60px; cursor:pointer;
+    clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);
+    transition:all .2s; text-transform:uppercase;
+  }
+  .btn-start:hover { transform:scale(1.05); box-shadow:0 0 40px rgba(188,19,254,.7),0 0 80px rgba(0,242,255,.3); }
+
+  /* ── GAME ── */
+  #screen-game { gap:0; justify-content:flex-start; padding:16px 20px 30px; }
+  .top-bar { width:100%; max-width:960px; display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(188,19,254,.2); margin-bottom:16px; }
+  .level-label { font-family:'Orbitron',monospace; font-size:11px; color:var(--neon-purple); letter-spacing:.25em; }
+  .level-name { font-family:'Orbitron',monospace; font-size:clamp(13px,2.5vw,18px); font-weight:700; color:#fff; letter-spacing:.1em; }
+  .progress-dots { display:flex; gap:8px; align-items:center; }
+  .dot { width:10px; height:10px; border:1px solid var(--neon-purple); border-radius:50%; transition:all .4s; }
+  .dot.done { background:var(--neon-green); border-color:var(--neon-green); box-shadow:0 0 10px var(--neon-green); }
+  .dot.current { background:var(--neon-purple); border-color:var(--neon-purple); animation:dotPulse 1.5s ease-in-out infinite; }
+  @keyframes dotPulse{0%,100%{box-shadow:0 0 6px var(--neon-purple)}50%{box-shadow:0 0 20px var(--neon-purple)}}
+
+  .scenario-box {
+    width:100%; max-width:960px;
+    background:rgba(188,19,254,.06); border:1px solid rgba(188,19,254,.2); border-left:3px solid var(--neon-purple);
+    padding:12px 18px; margin-bottom:14px;
+    font-size:clamp(13px,1.8vw,15px); color:#b0a8cc; letter-spacing:.05em; line-height:1.6;
+  }
+  .scenario-box::before { content:'// ЗАДАНИЕ'; display:block; font-family:'Orbitron',monospace; font-size:10px; color:var(--neon-purple); letter-spacing:.3em; margin-bottom:5px; }
+
+  /* Video */
+  .video-wrapper {
+    width:100%; max-width:960px; position:relative; aspect-ratio:16/7;
+    background:#000; border:1px solid rgba(0,242,255,.25); overflow:hidden;
+    margin-bottom:18px; box-shadow:0 0 40px rgba(0,242,255,.1),inset 0 0 60px rgba(0,0,0,.8);
+  }
+  .video-wrapper::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px); pointer-events:none; z-index:2; }
+  .video-wrapper::after { content:'● REC'; position:absolute; top:12px; right:16px; font-family:'Orbitron',monospace; font-size:10px; color:var(--neon-red); letter-spacing:.15em; z-index:3; animation:recBlink 1.5s ease-in-out infinite; }
+  @keyframes recBlink{0%,100%{opacity:1}50%{opacity:.2}}
+  #media-container img,#media-container video { width:100%; height:100%; object-fit:cover; display:block; }
+  .video-corner { position:absolute; width:20px; height:20px; z-index:4; }
+  .video-corner.tl{top:0;left:0;border-top:2px solid var(--neon-blue);border-left:2px solid var(--neon-blue)}
+  .video-corner.tr{top:0;right:0;border-top:2px solid var(--neon-blue);border-right:2px solid var(--neon-blue)}
+  .video-corner.bl{bottom:0;left:0;border-bottom:2px solid var(--neon-blue);border-left:2px solid var(--neon-blue)}
+  .video-corner.br{bottom:0;right:0;border-bottom:2px solid var(--neon-blue);border-right:2px solid var(--neon-blue)}
+
+  /* ── GENRE CARDS ── */
+  .genre-grid { width:100%; max-width:960px; display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+
+  .genre-card {
+    background:rgba(10,5,25,.92);
+    border:1px solid rgba(188,19,254,.3);
+    display:flex; flex-direction:column;
+    clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+    transition:border-color .25s,box-shadow .25s;
+    overflow:hidden;
+  }
+  .genre-card:hover { border-color:rgba(188,19,254,.65); box-shadow:0 0 16px rgba(188,19,254,.2); }
+  .genre-card.correct { border-color:var(--neon-green)!important; box-shadow:0 0 28px rgba(0,255,136,.5)!important; pointer-events:none; animation:correctFlash .5s ease; }
+  .genre-card.wrong   { border-color:var(--neon-red)!important;   box-shadow:0 0 18px rgba(255,45,85,.4)!important; animation:shake .35s ease; }
+  @keyframes correctFlash{0%{transform:scale(1)}35%{transform:scale(1.05)}100%{transform:scale(1)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* Info row */
+  .card-info { display:flex; align-items:center; gap:8px; padding:12px 12px 8px; }
+  .card-icon { font-size:clamp(22px,2.5vw,28px); flex-shrink:0; }
+  .card-names { flex:1; min-width:0; }
+  .card-name-en { font-family:'Orbitron',monospace; font-size:clamp(11px,1.4vw,15px); font-weight:700; letter-spacing:.12em; color:#fff; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .card-name-ru { font-size:clamp(13px,1.5vw,16px); color:var(--text-dim); letter-spacing:.04em; }
+
+  /* ── MINI PLAYER ── */
+  .mini-player { padding:0 10px 8px; display:flex; flex-direction:column; gap:5px; }
+
+  /* Progress bar */
+  .player-bar-wrap { position:relative; height:3px; background:rgba(255,255,255,.1); border-radius:2px; cursor:pointer; }
+  .player-bar-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--neon-purple),var(--neon-blue)); border-radius:2px; transition:width .25s linear; pointer-events:none; }
+  .player-bar-head {
+    position:absolute; top:50%; right:0; transform:translate(50%,-50%);
+    width:8px; height:8px; border-radius:50%; background:#fff;
+    box-shadow:0 0 6px var(--neon-blue); opacity:0; transition:opacity .2s;
+    pointer-events:none;
+  }
+  .mini-player.active .player-bar-head { opacity:1; }
+
+  /* Time + controls row */
+  .player-controls { display:flex; align-items:center; gap:6px; }
+  .btn-play-small {
+    font-size:12px; line-height:1;
+    color:var(--neon-blue); background:rgba(0,242,255,.08);
+    border:1px solid rgba(0,242,255,.3); border-radius:3px;
+    width:24px; height:24px; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0; transition:all .2s;
+  }
+  .btn-play-small:hover { background:rgba(0,242,255,.2); border-color:var(--neon-blue); box-shadow:0 0 8px rgba(0,242,255,.4); }
+  .mini-player.active .btn-play-small { color:var(--neon-yellow); border-color:rgba(255,229,0,.5); background:rgba(255,229,0,.08); }
+
+  .player-time { font-family:'Orbitron',monospace; font-size:9px; color:var(--text-dim); letter-spacing:.1em; flex:1; text-align:right; }
+
+  /* Waveform bars */
+  .mini-wave { display:flex; align-items:center; gap:2px; height:14px; margin-left:2px; }
+  .mini-wave span { display:block; width:2px; background:var(--neon-blue); border-radius:1px; opacity:.3; }
+  .mini-player.active .mini-wave span {
+    opacity:1; background:var(--neon-yellow);
+    animation:wavebar .7s ease-in-out infinite alternate;
+  }
+  .mini-wave span:nth-child(1){height:4px;animation-delay:0s}
+  .mini-wave span:nth-child(2){height:10px;animation-delay:.08s}
+  .mini-wave span:nth-child(3){height:14px;animation-delay:.16s}
+  .mini-wave span:nth-child(4){height:7px;animation-delay:.24s}
+  .mini-wave span:nth-child(5){height:11px;animation-delay:.12s}
+  @keyframes wavebar{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+
+  /* Choose button */
+  .btn-choose {
+    font-family:'Orbitron',monospace; font-size:clamp(11px,1.3vw,14px); font-weight:700; letter-spacing:.18em;
+    color:rgba(224,214,255,.6); background:transparent;
+    border:none; border-top:1px solid rgba(188,19,254,.2);
+    padding:10px 8px; cursor:pointer; text-transform:uppercase; width:100%;
+    transition:all .2s;
+  }
+  .btn-choose:hover { color:#fff; background:rgba(188,19,254,.15); text-shadow:0 0 10px rgba(188,19,254,.8); }
+
+  .feedback-msg { width:100%; max-width:960px; text-align:center; font-family:'Orbitron',monospace; font-size:13px; letter-spacing:.2em; margin-top:12px; min-height:24px; transition:all .3s; }
+  .feedback-msg.correct { color:var(--neon-green); text-shadow:0 0 15px var(--neon-green); }
+  .feedback-msg.wrong   { color:var(--neon-red); }
+
+  /* ── REVEAL OVERLAY (видео со звуком после верного ответа) ── */
+  .reveal-overlay {
+    position:fixed; inset:0; z-index:50;
+    background:rgba(2,1,6,.92); backdrop-filter:blur(6px);
+    display:none; align-items:center; justify-content:center;
+    flex-direction:column; gap:18px; padding:20px;
+    opacity:0; transition:opacity .35s;
+  }
+  .reveal-overlay.active { display:flex; opacity:1; }
+  .reveal-label {
+    font-family:'Orbitron',monospace; font-size:clamp(11px,1.6vw,14px);
+    color:var(--neon-green); letter-spacing:.3em; text-transform:uppercase;
+    text-shadow:0 0 12px rgba(0,255,136,.6);
+  }
+  .reveal-video-wrap {
+    width:100%; max-width:680px; aspect-ratio:9/16; max-height:72vh;
+    background:#000; border:2px solid var(--neon-green);
+    box-shadow:0 0 50px rgba(0,255,136,.35), inset 0 0 40px rgba(0,0,0,.6);
+    overflow:hidden; position:relative;
+  }
+  .reveal-video-wrap video { width:100%; height:100%; object-fit:contain; display:block; background:#000; }
+  .btn-reveal-next {
+    font-family:'Orbitron',monospace; font-size:13px; font-weight:700; letter-spacing:.25em;
+    color:var(--bg-dark); background:linear-gradient(135deg,var(--neon-green),var(--neon-blue));
+    border:none; padding:14px 44px; cursor:pointer; text-transform:uppercase;
+    clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
+    transition:all .2s;
+  }
+  .btn-reveal-next:hover { transform:scale(1.05); box-shadow:0 0 30px rgba(0,255,136,.6); }
+
+  /* ── FINAL ── */
+  #screen-final { text-align:center; gap:28px; }
+  .digital-rain { position:fixed; inset:0; z-index:0; pointer-events:none; }
+  .final-content { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:28px; }
+  .final-title { font-family:'Orbitron',monospace; font-size:clamp(14px,2vw,18px); color:var(--neon-blue); letter-spacing:.3em; }
+  .access-granted { font-family:'Orbitron',monospace; font-size:clamp(28px,5vw,56px); font-weight:900; color:var(--neon-green); text-shadow:0 0 30px rgba(0,255,136,.8),0 0 80px rgba(0,255,136,.3); letter-spacing:.08em; animation:accessFlicker 3s ease-in-out infinite; }
+  @keyframes accessFlicker{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.4}94%{opacity:1}96%{opacity:.6}97%{opacity:1}}
+  .code-box { background:rgba(0,255,136,.05); border:2px solid var(--neon-green); padding:24px 48px; position:relative; cursor:pointer; transition:all .25s; box-shadow:0 0 40px rgba(0,255,136,.15); }
+  .code-box:hover { box-shadow:0 0 60px rgba(0,255,136,.35); transform:scale(1.03); }
+  .code-box::before { content:'// КОД ДОСТУПА'; position:absolute; top:-12px; left:20px; font-family:'Orbitron',monospace; font-size:10px; color:var(--neon-green); background:var(--bg-dark); padding:0 8px; letter-spacing:.25em; }
+  .code-text { font-family:'Orbitron',monospace; font-size:clamp(24px,4vw,42px); font-weight:900; color:#fff; letter-spacing:.2em; text-shadow:0 0 20px rgba(0,255,136,.6); }
+  .copy-hint { font-size:12px; color:var(--text-dim); letter-spacing:.2em; margin-top:8px; text-transform:uppercase; }
+  .copy-toast { position:fixed; bottom:40px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--neon-green); color:#000; font-family:'Orbitron',monospace; font-size:12px; padding:10px 24px; letter-spacing:.2em; opacity:0; transition:all .3s; pointer-events:none; z-index:999; }
+  .copy-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .final-desc { max-width:520px; font-size:15px; color:var(--text-dim); line-height:1.7; letter-spacing:.05em; }
+  .btn-restart { font-family:'Orbitron',monospace; font-size:12px; letter-spacing:.25em; color:var(--text-dim); background:transparent; border:1px solid rgba(106,95,138,.4); padding:12px 32px; cursor:pointer; text-transform:uppercase; transition:all .25s; }
+  .btn-restart:hover { color:var(--text-primary); border-color:rgba(188,19,254,.5); }
+
+  @media(max-width:640px){ .genre-grid{grid-template-columns:repeat(2,1fr)} .top-bar{flex-direction:column;gap:10px;text-align:center} }
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<section class="screen active" id="screen-welcome">
+  <div class="system-badge">NEURAL AUDIO INTERFACE v2.0</div>
+  <h1 class="welcome-title">SOUND<br>CALIBRATION<br>TERMINAL</h1>
+  <p class="welcome-sub">Музыкальный радар · 6 уровней</p>
+  <p class="pulse-text">SYSTEM READY. INITIALIZE CALIBRATION?</p>
+  <button class="btn-start" onclick="startGame()">▶ START</button>
+</section>
+
+<!-- GAME -->
+<section class="screen" id="screen-game">
+  <div class="top-bar">
+    <div>
+      <div class="level-label">УРОВЕНЬ</div>
+      <div class="level-name" id="level-name">—</div>
+    </div>
+    <div class="progress-dots" id="progress-dots"></div>
+  </div>
+  <div class="scenario-box" id="scenario-text"></div>
+  <div class="video-wrapper">
+    <div id="media-container"></div>
+    <div class="video-corner tl"></div><div class="video-corner tr"></div>
+    <div class="video-corner bl"></div><div class="video-corner br"></div>
+  </div>
+  <div class="genre-grid" id="genre-grid"></div>
+  <div class="feedback-msg" id="feedback-msg"></div>
+
+  <!-- Появляется после верного ответа: полное видео со звуком -->
+  <div class="reveal-overlay" id="reveal-overlay">
+    <div class="reveal-label">✓ ВЕРНЫЙ ОТВЕТ — СМОТРИ ПОЛНОЕ ВИДЕО</div>
+    <div class="reveal-video-wrap">
+      <video id="reveal-video" controls autoplay playsinline></video>
+    </div>
+    <button class="btn-reveal-next" onclick="closeReveal()">ДАЛЬШЕ ▶</button>
+  </div>
+</section>
+
+<!-- FINAL -->
+<section class="screen" id="screen-final">
+  <canvas class="digital-rain" id="rain-canvas"></canvas>
+  <div class="final-content">
+    <div class="final-title">// КАЛИБРОВКА ЗАВЕРШЕНА //</div>
+    <div class="access-granted">✦ ACCESS GRANTED ✦</div>
+    <div class="code-box" onclick="copyCode()">
+      <div class="code-text">AI_SUNO</div>
+      <div class="copy-hint">нажми, чтобы скопировать</div>
+    </div>
+    <p class="final-desc">Ты прошёл все уровни Музыкального радара.<br>Твой слух — откалиброван. Используй этот код для следующего шага.</p>
+    <button class="btn-restart" onclick="restartGame()">↺ ПЕРЕЗАПУСТИТЬ</button>
+  </div>
+</section>
+<div class="copy-toast" id="copy-toast">СКОПИРОВАНО ✓</div>
+
+<!-- AUDIO для прослушки + MP4 финального видео со звуком
+  Папка проекта:
+  /index.html
+  /sounds/  phonk.mp3, lofi.mp3, techno.mp3, rock.mp3, kpop.mp3, adventure.mp3
+  /media/   level1.gif … level6.gif   (немые гифки-задания)
+            level1phonk.mp4, level2_lofi.mp4, level3techno.mp4,
+            level4rock.mp4, level5kpop.mp4, level6adventure.mp4  (финальные видео со звуком)
+-->
+<audio id="audio-phonk"     src="sounds/phonk.mp3"     preload="auto"></audio>
+<audio id="audio-lofi"      src="sounds/lofi.mp3"      preload="auto"></audio>
+<audio id="audio-techno"    src="sounds/techno.mp3"    preload="auto"></audio>
+<audio id="audio-rock"      src="sounds/rock.mp3"      preload="auto"></audio>
+<audio id="audio-kpop"      src="sounds/kpop.mp3"      preload="auto"></audio>
+<audio id="audio-adventure" src="sounds/adventure.mp3" preload="auto"></audio>
+
+<script>
+const GENRE_INFO = {
+  phonk:     { en:"PHONK",       ru:"Фонк",                icon:"🚗" },
+  lofi:      { en:"LO-FI",       ru:"Ло-Фай",              icon:"🎧" },
+  techno:    { en:"TECHNO",      ru:"Техно",               icon:"⚡" },
+  rock:      { en:"ROCK / PUNK", ru:"Рок / Панк",          icon:"🎸" },
+  kpop:      { en:"K-POP",       ru:"К-Поп",               icon:"🎤" },
+  adventure: { en:"ADVENTURE",   ru:"Эпик / Приключение",  icon:"🗺️" },
+};
+const AUDIO_MAP = {
+  phonk:"audio-phonk", lofi:"audio-lofi", techno:"audio-techno",
+  rock:"audio-rock", kpop:"audio-kpop", adventure:"audio-adventure",
+};
+// Полные видео со звуком — показываются ПОСЛЕ правильного ответа
+const REVEAL_VIDEO = {
+  phonk:     "media/level1phonk.mp4",
+  lofi:      "media/level2_lofi.mp4",
+  techno:    "media/level3techno.mp4",
+  rock:      "media/level4rock.mp4",
+  kpop:      "media/level5kpop.mp4",
+  adventure: "media/level6adventure.mp4",
+};
+const LEVELS = [
+  { id:1, name:"LEVEL 01 // VIRTUAL ARENA",
+    scenario:"Твоя команда тащит. Ты заходишь, делаешь решающий фраг — или вылетаешь в идеальный дрифт. Нужно что-то максимально качающее. Что выбираешь?",
+    media:"media/level1.gif", correct:"phonk", options:["phonk","lofi","adventure","techno"] },
+  { id:2, name:"LEVEL 02 // STUDY MODE",
+    scenario:"Ты готовишься к контрольной. За окном дождь. Нужно сосредоточиться, но не уснуть — остаться в спокойствии. Какой бит поставишь?",
+    media:"media/level2.gif", correct:"lofi", options:["rock","lofi","phonk","kpop"] },
+  { id:3, name:"LEVEL 03 // CYBER RUN",
+    scenario:"Ты — хакер в виртуальном мире. Вокруг всё светится неоном, надо быстро бежать и взламывать системы. Какой ритм задаёт темп?",
+    media:"media/level3.gif", correct:"techno", options:["lofi","techno","adventure","kpop"] },
+  { id:4, name:"LEVEL 04 // REBEL BREAK",
+    scenario:"Твой герой решил устроить бунт. Скейт-трюк, прыжок в толпу, дерзость и драйв. Музыка должна разнести всё вокруг.",
+    media:"media/level4.gif", correct:"rock", options:["lofi","techno","rock","phonk"] },
+  { id:5, name:"LEVEL 05 // STREET STORY",
+    scenario:"Герой идёт по улице в крутой одежде, исполняет яркий образ. Музыка подчёркивает динамику, харизму и стиль.",
+    media:"media/level5.gif", correct:"kpop", options:["rock","adventure","techno","kpop"] },
+  { id:6, name:"LEVEL 06 // BONUS: NEW WORLD",
+    scenario:"Ты открыл новую локацию в Minecraft. Лес, горы, облака. Ты идёшь в неизвестность. Музыка звучит масштабно — как в кино про приключения.",
+    media:"media/level6.gif", correct:"adventure", options:["phonk","lofi","kpop","adventure"] },
+];
+
+let currentLevel = 0;
+let answered = false;
+let playingId = null;
+let progressTimers = {};
+
+// ── AUDIO ────────────────────────────────────────────────────────
+function stopAllAudio() {
+  Object.entries(AUDIO_MAP).forEach(([id]) => {
+    const el = document.getElementById(AUDIO_MAP[id]);
+    if (el) { el.pause(); el.currentTime = 0; }
+    clearInterval(progressTimers[id]);
+  });
+  document.querySelectorAll('.mini-player').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.btn-play-small').forEach(b => b.textContent = '▶');
+  document.querySelectorAll('.player-bar-fill').forEach(b => b.style.width = '0%');
+  document.querySelectorAll('.player-bar-head').forEach(h => h.style.right = '100%');
+  document.querySelectorAll('.player-time').forEach(t => t.textContent = '0:00');
+  playingId = null;
+}
+
+function togglePlay(genreId) {
+  if (answered) return;
+  if (playingId === genreId) { stopAllAudio(); return; }
+  stopAllAudio();
+
+  const el = document.getElementById(AUDIO_MAP[genreId]);
+  if (!el) return;
+  el.play().catch(() => {});
+  playingId = genreId;
+
+  const player = document.getElementById('player-' + genreId);
+  const btnPlay = player.querySelector('.btn-play-small');
+  const fill    = player.querySelector('.player-bar-fill');
+  const timeEl  = player.querySelector('.player-time');
+
+  player.classList.add('active');
+  btnPlay.textContent = '■';
+
+  el.onended = () => stopAllAudio();
+
+  progressTimers[genreId] = setInterval(() => {
+    if (!el.duration || isNaN(el.duration)) return;
+    const pct = (el.currentTime / el.duration) * 100;
+    fill.style.width = pct + '%';
+    const s = Math.floor(el.currentTime);
+    timeEl.textContent = Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+  }, 200);
+}
+
+function seekBar(e, genreId) {
+  const el = document.getElementById(AUDIO_MAP[genreId]);
+  if (!el || !el.duration) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  el.currentTime = pct * el.duration;
+}
+
+// ── SCREENS ──────────────────────────────────────────────────────
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function startGame()  { currentLevel=0; showScreen('screen-game'); renderLevel(); }
+function restartGame(){ stopAllAudio(); currentLevel=0; showScreen('screen-welcome'); }
+
+// ── RENDER ───────────────────────────────────────────────────────
+function renderLevel() {
+  answered = false;
+  stopAllAudio();
+  document.getElementById('reveal-overlay').classList.remove('active');
+  const lvl = LEVELS[currentLevel];
+
+  document.getElementById('level-name').textContent = lvl.name;
+  document.getElementById('scenario-text').textContent = lvl.scenario;
+  document.getElementById('progress-dots').innerHTML =
+    LEVELS.map((_,i)=>`<div class="dot${i<currentLevel?' done':i===currentLevel?' current':''}"></div>`).join('');
+  document.getElementById('media-container').innerHTML =
+    `<img src="${lvl.media}" alt="visual" style="width:100%;height:100%;object-fit:cover">`;
+  document.getElementById('feedback-msg').textContent = '';
+  document.getElementById('feedback-msg').className = 'feedback-msg';
+
+  document.getElementById('genre-grid').innerHTML = lvl.options.map(id => {
+    const g = GENRE_INFO[id];
+    return `
+    <div class="genre-card" id="card-${id}">
+      <div class="card-info">
+        <div class="card-icon">${g.icon}</div>
+        <div class="card-names">
+          <div class="card-name-en">${g.en}</div>
+          <div class="card-name-ru">${g.ru}</div>
+        </div>
+      </div>
+
+      <div class="mini-player" id="player-${id}">
+        <div class="player-bar-wrap" onclick="seekBar(event,'${id}')">
+          <div class="player-bar-fill"></div>
+          <div class="player-bar-head"></div>
+        </div>
+        <div class="player-controls">
+          <button class="btn-play-small" onclick="togglePlay('${id}')">▶</button>
+          <div class="mini-wave">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="player-time">0:00</div>
+        </div>
+      </div>
+
+      <button class="btn-choose" onclick="handleAnswer('${id}')">✓ ВЫБРАТЬ</button>
+    </div>`;
+  }).join('');
+}
+
+// ── ANSWER ───────────────────────────────────────────────────────
+function handleAnswer(genreId) {
+  if (answered) return;
+  answered = true;
+  stopAllAudio();
+  const lvl = LEVELS[currentLevel];
+  const feedback = document.getElementById('feedback-msg');
+
+  if (genreId === lvl.correct) {
+    document.getElementById('card-' + genreId).classList.add('correct');
+    feedback.textContent = '✓ ВЕРНО! УРОВЕНЬ ПРОЙДЕН';
+    feedback.className = 'feedback-msg correct';
+    setTimeout(() => openReveal(genreId), 900);
+  } else {
+    const card = document.getElementById('card-' + genreId);
+    card.classList.add('wrong');
+    setTimeout(() => card.classList.remove('wrong'), 400);
+    feedback.textContent = '✗ НЕ ТО — ПОПРОБУЙ ЕЩЁ РАЗ';
+    feedback.className = 'feedback-msg wrong';
+    answered = false;
+  }
+}
+
+// ── REVEAL VIDEO (полное видео со звуком) ──────────────────────────
+function openReveal(genreId) {
+  const overlay = document.getElementById('reveal-overlay');
+  const video = document.getElementById('reveal-video');
+  video.src = REVEAL_VIDEO[genreId] || '';
+  overlay.classList.add('active');
+  video.currentTime = 0;
+  video.play().catch(() => {});
+}
+
+function closeReveal() {
+  const overlay = document.getElementById('reveal-overlay');
+  const video = document.getElementById('reveal-video');
+  video.pause();
+  video.src = '';
+  overlay.classList.remove('active');
+
+  currentLevel++;
+  currentLevel >= LEVELS.length ? showFinal() : renderLevel();
+}
+
+// ── FINAL ────────────────────────────────────────────────────────
+function showFinal() { showScreen('screen-final'); startRain(); }
+function copyCode() {
+  navigator.clipboard.writeText('AI_SUNO').catch(()=>{});
+  const t = document.getElementById('copy-toast');
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// ── RAIN ─────────────────────────────────────────────────────────
+function startRain() {
+  const cv = document.getElementById('rain-canvas'), ctx = cv.getContext('2d');
+  function resize(){cv.width=innerWidth;cv.height=innerHeight} resize();
+  window.addEventListener('resize',resize);
+  const chars='アイウエオABCDEF0123456789AI_SUNO◆△▽';
+  const fs=14; let cols=Math.floor(cv.width/fs);
+  let drops=Array(cols).fill(0).map(()=>Math.random()*-50);
+  setInterval(()=>{
+    ctx.fillStyle='rgba(5,5,8,.07)'; ctx.fillRect(0,0,cv.width,cv.height);
+    cols=Math.floor(cv.width/fs); while(drops.length<cols) drops.push(0);
+    ctx.font=`${fs}px monospace`;
+    for(let i=0;i<cols;i++){
+      const c=chars[Math.floor(Math.random()*chars.length)];
+      const bright=Math.random()>.95;
+      ctx.fillStyle=bright?'#fff':(Math.random()>.5?'#00ff88':'#00cc66');
+      ctx.globalAlpha=bright?1:.5; ctx.fillText(c,i*fs,drops[i]*fs); ctx.globalAlpha=1;
+      if(drops[i]*fs>cv.height&&Math.random()>.975) drops[i]=0; drops[i]++;
+    }
+  },40);
+}
+</script>
+</body>
+</html>
