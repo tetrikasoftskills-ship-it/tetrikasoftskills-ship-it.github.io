@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Руководство Преподавателя | НейроМузыка</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07080f;
+    --bg2: #0d0e1a;
+    --bg3: #111226;
+    --cyan: #00f5ff;
+    --magenta: #ff00cc;
+    --yellow: #ffee00;
+    --green: #00ff88;
+    --orange: #ff6b00;
+    --purple: #9b5de5;
+    --text: #c8d0e8;
+    --text-dim: #5a6080;
+    --border: rgba(0,245,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    padding: 60px 24px 50px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(0,245,255,0.04) 0%, transparent 100%);
+    overflow: hidden;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), var(--magenta), transparent);
+  }
+
+  .header-eyebrow {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(24px, 5vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 50%, var(--magenta) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+  }
+
+  .header-sub {
+    font-size: 14px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* ── MAIN RULE BANNER ── */
+  .main-rule {
+    margin: 32px auto;
+    max-width: 860px;
+    padding: 0 24px;
+  }
+
+  .rule-card {
+    background: linear-gradient(135deg, rgba(255,0,204,0.08), rgba(0,245,255,0.06));
+    border: 1px solid rgba(255,0,204,0.35);
+    border-radius: 12px;
+    padding: 28px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .rule-card::before {
+    content: '❗';
+    position: absolute;
+    top: -10px; right: 20px;
+    font-size: 48px;
+    opacity: 0.15;
+  }
+
+  .rule-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--magenta);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .rule-card h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+
+  .rule-card p {
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  /* ── LAYOUT ── */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── STAGE SECTIONS ── */
+  .stage {
+    margin-bottom: 56px;
+  }
+
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stage-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .stage-num.cyan   { color: var(--cyan);    background: rgba(0,245,255,0.1);   border: 1px solid rgba(0,245,255,0.3); }
+  .stage-num.yellow { color: var(--yellow);  background: rgba(255,238,0,0.08);  border: 1px solid rgba(255,238,0,0.3); }
+  .stage-num.green  { color: var(--green);   background: rgba(0,255,136,0.08);  border: 1px solid rgba(0,255,136,0.3); }
+  .stage-num.orange { color: var(--orange);  background: rgba(255,107,0,0.08);  border: 1px solid rgba(255,107,0,0.3); }
+  .stage-num.purple { color: var(--purple);  background: rgba(155,93,229,0.08); border: 1px solid rgba(155,93,229,0.3); }
+
+  .stage-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(14px, 2.5vw, 18px);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .card p { color: var(--text); font-size: 14px; margin-bottom: 8px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .alert {
+    background: rgba(255,238,0,0.06);
+    border: 1px solid rgba(255,238,0,0.25);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--yellow);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .alert-icon { flex-shrink: 0; margin-top: 1px; }
+
+  /* ── TOOLS GRID ── */
+  .tools-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .tool-category {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .cat-header {
+    padding: 12px 20px;
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cat-header.text   { color: var(--cyan);   background: rgba(0,245,255,0.07); }
+  .cat-header.sound  { color: var(--magenta); background: rgba(255,0,204,0.07); }
+  .cat-header.image  { color: var(--yellow);  background: rgba(255,238,0,0.07); }
+  .cat-header.video  { color: var(--orange);  background: rgba(255,107,0,0.07); }
+
+  .cat-icon { font-size: 16px; }
+
+  .tools-list {
+    padding: 14px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .tool-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .tool-info { flex: 1; }
+
+  .tool-link {
+    font-weight: 600;
+    font-size: 14px;
+    color: #fff;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .tool-link:hover { color: var(--cyan); text-shadow: 0 0 8px var(--cyan); }
+
+  .tool-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  .tool-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .badge-free    { color: var(--green);   background: rgba(0,255,136,0.1);  border: 1px solid rgba(0,255,136,0.25); }
+  .badge-main    { color: var(--cyan);    background: rgba(0,245,255,0.1);  border: 1px solid rgba(0,245,255,0.25); }
+  .badge-ru      { color: var(--yellow);  background: rgba(255,238,0,0.08); border: 1px solid rgba(255,238,0,0.2); }
+
+  /* ── HOMEWORK GRID ── */
+  .hw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .hw-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .hw-card:hover {
+    border-color: rgba(0,245,255,0.4);
+    box-shadow: 0 0 20px rgba(0,245,255,0.07);
+  }
+
+  .hw-icon { font-size: 26px; margin-bottom: 10px; }
+  .hw-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .hw-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  /* ── CHECKLIST ── */
+  .checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .check-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .check-item:hover { border-color: rgba(0,255,136,0.3); }
+
+  .check-box {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(0,255,136,0.4);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--green);
+  }
+  .check-box.done { background: rgba(0,255,136,0.15); border-color: var(--green); }
+
+  .check-content h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .check-content p { font-size: 12px; color: var(--text-dim); }
+
+  /* ── PROMPT ANATOMY ── */
+  .anatomy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .anatomy-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+  }
+
+  .anatomy-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--cyan);
+    opacity: 0.3;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .anatomy-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .anatomy-ex { font-size: 12px; color: var(--text-dim); font-style: italic; }
+
+  /* ── PROMPT TYPES ── */
+  .prompt-types { display: flex; flex-direction: column; gap: 12px; }
+
+  .prompt-type {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--cyan);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+  }
+  .prompt-type:nth-child(2) { border-left-color: var(--magenta); }
+  .prompt-type:nth-child(3) { border-left-color: var(--yellow); }
+
+  .pt-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    margin-bottom: 4px;
+  }
+  .prompt-type:nth-child(2) .pt-label { color: var(--magenta); }
+  .prompt-type:nth-child(3) .pt-label { color: var(--yellow); }
+
+  .pt-title { font-weight: 600; font-size: 14px; color: #fff; margin-bottom: 4px; }
+  .pt-desc { font-size: 13px; color: var(--text-dim); }
+
+  /* ── META PROMPT ── */
+  .meta-prompt {
+    background: var(--bg3);
+    border: 1px solid rgba(155,93,229,0.35);
+    border-radius: 10px;
+    padding: 22px 24px;
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .meta-prompt::before {
+    content: 'META';
+    position: absolute;
+    top: -8px; right: 16px;
+    font-family: 'Orbitron', monospace;
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--purple);
+    opacity: 0.06;
+    letter-spacing: -2px;
+  }
+
+  .meta-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--purple);
+    margin-bottom: 10px;
+  }
+
+  .meta-prompt h4 { font-size: 14px; color: #fff; margin-bottom: 12px; }
+
+  .prompt-box {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(155,93,229,0.2);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #b8c8e8;
+    line-height: 1.6;
+  }
+
+  /* ── AGE GROUPS ── */
+  .age-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .age-grid { grid-template-columns: 1fr; }
+    .hw-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  .age-card {
+    border-radius: 10px;
+    padding: 22px 20px;
+    border: 1px solid;
+  }
+  .age-card.junior { background: rgba(0,245,255,0.04); border-color: rgba(0,245,255,0.2); }
+  .age-card.senior { background: rgba(255,0,204,0.04); border-color: rgba(255,0,204,0.2); }
+
+  .age-badge {
+    display: inline-block;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+  .age-card.junior .age-badge { color: var(--cyan); background: rgba(0,245,255,0.1); }
+  .age-card.senior .age-badge { color: var(--magenta); background: rgba(255,0,204,0.1); }
+
+  .age-card h4 { font-size: 15px; color: #fff; font-weight: 600; margin-bottom: 8px; }
+  .age-card p  { font-size: 13px; color: var(--text-dim); margin-bottom: 10px; }
+
+  .age-methods { display: flex; flex-direction: column; gap: 6px; }
+  .age-method {
+    font-size: 12px;
+    color: var(--text);
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    border-left: 2px solid;
+  }
+  .age-card.junior .age-method { border-color: var(--cyan); }
+  .age-card.senior .age-method { border-color: var(--magenta); }
+  .age-method strong { color: #fff; display: block; font-size: 11px; margin-bottom: 2px; font-weight: 600; }
+
+  /* ── GOLDEN RULES ── */
+  .golden-rules { display: flex; flex-direction: column; gap: 12px; }
+
+  .golden-rule {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .rule-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .golden-rule h4 { font-size: 14px; color: #fff; font-weight: 600; margin-bottom: 4px; }
+  .golden-rule p  { font-size: 13px; color: var(--text-dim); }
+
+  /* ── KTP TYPES ── */
+  .ktp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+
+  .ktp-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    transition: box-shadow 0.2s;
+  }
+  .ktp-card:hover { box-shadow: 0 0 20px rgba(0,245,255,0.06); }
+
+  .ktp-icon { font-size: 28px; margin-bottom: 10px; }
+  .ktp-type {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .ktp-card:nth-child(2) .ktp-type { color: var(--magenta); }
+  .ktp-card:nth-child(3) .ktp-type { color: var(--green); }
+  .ktp-card h4 { font-size: 14px; color: #fff; font-weight: 600; margin-bottom: 6px; }
+  .ktp-card p  { font-size: 12px; color: var(--text-dim); }
+
+  /* ── FINAL CTA ── */
+  .final-cta {
+    background: linear-gradient(135deg, rgba(0,245,255,0.07), rgba(255,0,204,0.05));
+    border: 1px solid rgba(0,245,255,0.2);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    margin-top: 48px;
+  }
+
+  .final-cta .rocket { font-size: 36px; margin-bottom: 14px; }
+  .final-cta h3 {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .final-cta p { font-size: 14px; color: var(--text-dim); max-width: 520px; margin: 0 auto; }
+
+  /* ── VIDEO LINK ── */
+  .video-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--cyan);
+    text-decoration: none;
+    margin-top: 12px;
+    padding: 8px 14px;
+    border: 1px solid rgba(0,245,255,0.25);
+    border-radius: 6px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .video-link:hover {
+    background: rgba(0,245,255,0.07);
+    box-shadow: 0 0 12px rgba(0,245,255,0.15);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 40px 0;
+  }
+
+  /* ── SMALL SECTION LABEL ── */
+  .section-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(0,245,255,0.2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-eyebrow">Технический и педагогический базис</div>
+  <h1>Руководство<br>Преподавателя</h1>
+  <p class="header-sub">Полное руководство по работе с AI-инструментами и управлению группой</p>
+</header>
+
+<!-- MAIN RULE -->
+<div class="main-rule">
+  <div class="rule-card">
+    <div class="rule-label">❗ Главное правило курса</div>
+    <h2>Независимость от инструментов</h2>
+    <p>Мы не привязываемся к конкретным ресурсам — технологии меняются каждый день. Если ребёнок привык работать в своей любимой нейросети — отлично, пусть работает там! Мы учим <strong>логике, промпт-инжинирингу и созданию проектов</strong>, а не зазубриванию кнопок на одном сайте.</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- STAGE 1 -->
+  <div class="stage">
+    <div class="stage-header">
+      <span class="stage-num cyan">ЭТАП 01</span>
+      <span class="stage-title">Технический фундамент — Аккаунты и Арсенал</span>
+    </div>
+
+    <div class="section-label">Google-аккаунты</div>
+    <div class="card">
+      <div class="card-title">🔑 Ферма Google-аккаунтов</div>
+      <p>Создай себе <strong>3–5 дополнительных Google-аккаунтов</strong>. Бесплатные лимиты в генераторах сгорают очень быстро. Запасные аккаунты — это твой бронежилет: если во время показа закончились кредиты, ты не паникуешь, а просто меняешь аккаунт за 10 секунд и продолжаешь эфир.</p>
+      <div class="alert">
+        <span class="alert-icon">⚠️</span>
+        <span>При регистрации каждого нового аккаунта <strong>ОБЯЗАТЕЛЬНО</strong> указывай свою основную реальную почту в поле «Резервный адрес» (Recovery Email). Без неё алгоритмы Google сочтут тебя ботом и заблокируют аккаунт навсегда.</span>
+      </div>
+      <a class="video-link" href="https://drive.google.com/file/d/1HYfauG3a_G8DegT8fa0QxopsrYUfL3xX/view?usp=drive_link" target="_blank">
+        ▶ Видео-инструкция по созданию аккаунтов
+      </a>
+    </div>
+
+    <div class="section-label" style="margin-top: 28px;">Базовый стек нейросетей (без VPN)</div>
+    <div class="tools-grid">
+
+      <!-- TEXT -->
+      <div class="tool-category">
+        <div class="cat-header text"><span class="cat-icon">✍️</span> Текст</div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://qwen.ai" target="_blank">Qwen</a>
+              <div class="tool-desc">Мощный, бесплатный, отлично понимает контекст</div>
+            </div>
+            <span class="tool-badge badge-free">FREE</span>
+          </div>
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://www.google.com/search?udm=50&q=" target="_blank">Google AI (Gemini)</a>
+              <div class="tool-desc">Включай смело, если другие висят. Работает молниеносно</div>
+            </div>
+            <span class="tool-badge badge-main">ОСНОВНОЙ</span>
+          </div>
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://chat.deepseek.com" target="_blank">DeepSeek</a>
+              <div class="tool-desc">Гениален в логике и структурировании кода</div>
+            </div>
+            <span class="tool-badge badge-free">FREE</span>
+          </div>
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://giga.chat" target="_blank">GigaChat</a>
+              <div class="tool-desc">Идеален для быстрых задач на русском языке</div>
+            </div>
+            <span class="tool-badge badge-ru">🇷🇺 RU</span>
+          </div>
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://ya.ru/ai/alice" target="_blank">YandexGPT</a>
+              <div class="tool-desc">Быстрые задачи на русском языке</div>
+            </div>
+            <span class="tool-badge badge-ru">🇷🇺 RU</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOUND -->
+      <div class="tool-category">
+        <div class="cat-header sound"><span class="cat-icon">🎵</span> Звук</div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://suno.com" target="_blank">Suno AI</a>
+              <div class="tool-desc">Топовая генерация музыкальных треков</div>
+            </div>
+            <span class="tool-badge badge-main">ОСНОВНОЙ</span>
+          </div>
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://udio.com" target="_blank">Udio</a>
+              <div class="tool-desc">Альтернативная генерация музыки</div>
+            </div>
+            <span class="tool-badge badge-free">FREE</span>
+          </div>
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://speechma.com" target="_blank">Speechma</a>
+              <div class="tool-desc">Качественный текст-в-речь (Voiceover) без лимитов</div>
+            </div>
+            <span class="tool-badge badge-free">FREE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMAGES -->
+      <div class="tool-category">
+        <div class="cat-header image"><span class="cat-icon">🖼</span> Изображения</div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://shedevrum.ai" target="_blank">Шедеврум</a>
+              <div class="tool-desc">Работает быстро, понимает русский язык</div>
+            </div>
+            <span class="tool-badge badge-ru">🇷🇺 RU</span>
+          </div>
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://kandinsky.ai" target="_blank">Kandinsky</a>
+              <div class="tool-desc">Работает быстро, понимает русский язык</div>
+            </div>
+            <span class="tool-badge badge-ru">🇷🇺 RU</span>
+          </div>
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://leonardo.ai" target="_blank">Leonardo AI</a>
+              <div class="tool-desc">Удобен для логотипов, мокапов и медиа</div>
+            </div>
+            <span class="tool-badge badge-main">ОСНОВНОЙ</span>
+          </div>
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://playground.com" target="_blank">Playground AI</a>
+              <div class="tool-desc">Встроенный переводчик и улучшатель промптов</div>
+            </div>
+            <span class="tool-badge badge-free">FREE</span>
+          </div>
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://piclumen.com" target="_blank">PicLumen</a>
+              <div class="tool-desc">Мощный апскейлер для улучшения деталей</div>
+            </div>
+            <span class="tool-badge badge-free">FREE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO -->
+      <div class="tool-category">
+        <div class="cat-header video"><span class="cat-icon">🎬</span> Видео</div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <div class="tool-info">
+              <a class="tool-link" href="https://klingai.com" target="_blank">Kling AI</a>
+              <div class="tool-desc">Генерация качественного и динамичного видео</div>
+            </div>
+            <span class="tool-badge badge-main">ОСНОВНОЙ</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- HOMEWORK -->
+    <div class="section-label" style="margin-top: 28px;">Домашний практикум</div>
+    <div class="hw-grid">
+      <div class="hw-card">
+        <div class="hw-icon">🤖</div>
+        <div class="hw-title">Ассистент</div>
+        <div class="hw-desc">Попроси Qwen или Google AI составить план тренировок или рецепт ужина из того, что есть в холодильнике</div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-icon">🎷</div>
+        <div class="hw-title">Плейлист</div>
+        <div class="hw-desc">Зайди в Suno и сгенерируй смешную песню в стиле джаз или панк-рок про то, как тяжело просыпаться по утрам</div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-icon">🎨</div>
+        <div class="hw-title">Аватар</div>
+        <div class="hw-desc">Сделай в Шедевруме стилизованную аватарку в стиле киберпанк или Pixar для рабочих чатов</div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-icon">🎞</div>
+        <div class="hw-title">Монтаж</div>
+        <div class="hw-desc">Закинь старую фото в Kling AI с промптом «make it move, dynamic camera zoom» и преврати в живое видео</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- STAGE 2 -->
+  <div class="stage">
+    <div class="stage-header">
+      <span class="stage-num yellow">ЭТАП 02</span>
+      <span class="stage-title">Краш-тест: Ломаем систему до учеников</span>
+    </div>
+
+    <div class="card" style="margin-bottom: 16px;">
+      <div class="card-title">Зачем это нужно</div>
+      <p>Ты должен выступить в роли «самого вредного ученика» и сломать систему до того, как это сделают дети на уроке. Обязательно пройди весь чек-лист ниже.</p>
+    </div>
+
+    <div class="checklist" id="checklist">
+      <div class="check-item">
+        <div class="check-box" onclick="this.classList.toggle('done'); this.textContent = this.classList.contains('done') ? '✓' : ''"></div>
+        <div class="check-content">
+          <h4>Стресс-тест лимитов</h4>
+          <p>Зайди в Suno и специально потрать все бесплатные кредиты. Зафиксируй, что пишет интерфейс и как выглядит процесс перелогина. На уроке у 20% детей лимиты сгорят в первые минуты.</p>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-box" onclick="this.classList.toggle('done'); this.textContent = this.classList.contains('done') ? '✓' : ''"></div>
+        <div class="check-content">
+          <h4>Тест «Кривой промпт»</h4>
+          <p>Попробуй написать запрос в генератор картинок на русском языке, со сложными оборотами и отрицаниями («сделай так, чтобы НЕ было красного»). Увидишь, как нейросети путаются — научишься сразу пресекать это у детей.</p>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-box" onclick="this.classList.toggle('done'); this.textContent = this.classList.contains('done') ? '✓' : ''"></div>
+        <div class="check-content">
+          <h4>Слабое железо (CapCut/123apps)</h4>
+          <p>Загрузи в онлайн-видеоредактор 3 тяжёлых видеофайла, аудио и текст одновременно. Если компьютер завис — значит, детям нужны лёгкие исходники (не выше 720p).</p>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-box" onclick="this.classList.toggle('done'); this.textContent = this.classList.contains('done') ? '✓' : ''"></div>
+        <div class="check-content">
+          <h4>Капчи</h4>
+          <p>Разлогинься из всех сервисов и зайди заново. Умей быстро проходить сложные капчи — на них дети часто зависают надолго.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- STAGE 3 -->
+  <div class="stage">
+    <div class="stage-header">
+      <span class="stage-num green">ЭТАП 03</span>
+      <span class="stage-title">Искусство промптинга: Теория и Мета-навыки</span>
+    </div>
+
+    <div class="card" style="margin-bottom: 20px;">
+      <div class="card-title">Что такое промпт</div>
+      <p>Промпт — это <strong>техническое задание (ТЗ)</strong> для очень исполнительного, но лишённого фантазии стажёра. Не нужно зубрить шаблоны — нужно понимать формулу.</p>
+    </div>
+
+    <div class="section-label">Анатомия идеального промпта</div>
+    <div class="anatomy-grid">
+      <div class="anatomy-card">
+        <div class="anatomy-num">01</div>
+        <div class="anatomy-name">Роль</div>
+        <div class="anatomy-ex">«Ты — креативный копирайтер...»</div>
+      </div>
+      <div class="anatomy-card">
+        <div class="anatomy-num">02</div>
+        <div class="anatomy-name">Задача / Контекст</div>
+        <div class="anatomy-ex">«...напиши сценарий для короткого ролика»</div>
+      </div>
+      <div class="anatomy-card">
+        <div class="anatomy-num">03</div>
+        <div class="anatomy-name">Ограничения</div>
+        <div class="anatomy-ex">«...без воды, только факты, без красного»</div>
+      </div>
+      <div class="anatomy-card">
+        <div class="anatomy-num">04</div>
+        <div class="anatomy-name">Формат вывода</div>
+        <div class="anatomy-ex">«...выведи в виде таблицы»</div>
+      </div>
+    </div>
+
+    <div class="section-label">Вариации промптинга</div>
+    <div class="prompt-types">
+      <div class="prompt-type">
+        <div class="pt-label">Zero-shot</div>
+        <div class="pt-title">Прямой запрос</div>
+        <div class="pt-desc">Без примеров и контекста. «Напиши 5 идей для видео». Подходит для простых задач.</div>
+      </div>
+      <div class="prompt-type">
+        <div class="pt-label">Few-shot</div>
+        <div class="pt-title">Запрос с примерами</div>
+        <div class="pt-desc">Показываем референсы: «Напиши пост в таком же стиле. Пример 1: [...]. Пример 2: [...]. Теперь напиши свой».</div>
+      </div>
+      <div class="prompt-type">
+        <div class="pt-label">Chain of Thought</div>
+        <div class="pt-title">Цепочка рассуждений</div>
+        <div class="pt-desc">Просим ИИ думать пошагово: «Сначала проанализируй аудиторию, затем выдели их боль, и только потом пиши текст».</div>
+      </div>
+    </div>
+
+    <div class="meta-prompt">
+      <div class="meta-label">🤖 Мета-промптинг</div>
+      <h4>Нейросеть как Промпт-инженер</h4>
+      <p style="font-size:13px; color:var(--text-dim); margin-bottom:14px;">Не придумывай сложные промпты на английском сам — пусть это сделает ИИ. Скопируй и проверь этот шаблон в Qwen или DeepSeek:</p>
+      <div class="prompt-box">«Ты — эксперт по написанию промптов для генерации изображений. Моя цель — создать концепт-арт для игры. Я не знаю нужные теги освещения и рендера. Задай мне ровно 5 уточняющих вопросов о том, что должно быть на картинке. После того как я отвечу, напиши для меня 3 варианта идеального, детализированного промпта на английском языке».</div>
+    </div>
+
+    <div class="card" style="margin-top: 16px;">
+      <div class="card-title">🎨 Leonardo.ai — Встроенная магия</div>
+      <p>Если дети работают в Leonardo, помни о двух правилах:</p>
+      <p>1. <strong>Only English</strong> — генераторы мыслят тегами на английском.</p>
+      <p>2. <strong>Кнопка «Prompt Magic»</strong> — вбей простейшую фразу (A cute robot), нажми улучшение — платформа сама допишет профессиональные теги (cinematic lighting, depth of field). Это спасает от перегруза английским!</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- STAGE 4 -->
+  <div class="stage">
+    <div class="stage-header">
+      <span class="stage-num orange">ЭТАП 04</span>
+      <span class="stage-title">Педагогическая динамика и Управление группой</span>
+    </div>
+
+    <div class="section-label">Подход по возрасту</div>
+    <div class="age-grid">
+      <div class="age-card junior">
+        <span class="age-badge">🟢 5–7 классы</span>
+        <h4>Младшие</h4>
+        <p>Быстро отвлекаются, паникуют при сбоях. Нужен постоянный дофамин и элемент сказки.</p>
+        <div class="age-methods">
+          <div class="age-method">
+            <strong>Синхронный шаг</strong>
+            Делаем всё строго по команде. «Все нажали жёлтую кнопку. Жду плюсы в чат. Едем дальше!»
+          </div>
+          <div class="age-method">
+            <strong>Коллективный разум</strong>
+            Если у кого-то сбой — «Ребята, Влад включает экран. Кто видит ошибку? Кто его спасёт?»
+          </div>
+        </div>
+      </div>
+      <div class="age-card senior">
+        <span class="age-badge">🔴 8–9 классы</span>
+        <h4>Старшие</h4>
+        <p>Понты, соперничество, желание сделать «по-своему». Общайся с ними как с коллегами-продюсерами.</p>
+        <div class="age-methods">
+          <div class="age-method">
+            <strong>Асинхронный формат</strong>
+            Дай инструкцию на 3 минуты, включай таймер: «У вас 15 минут. Кто первый — забирает звание Senior».
+          </div>
+          <div class="age-method">
+            <strong>Взаимный аудит</strong>
+            В конце урока они профессионально оценивают промпты и работы друг друга.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top: 28px;">Золотые правила эфира</div>
+    <div class="golden-rules">
+      <div class="golden-rule">
+        <div class="rule-icon">⏱</div>
+        <div>
+          <h4>Правило 30 секунд</h4>
+          <p>Если у ребёнка техническая проблема, которую нельзя решить за 30 секунд голосом — проси включить демонстрацию экрана. Если и это не помогает за минуту — двигай группу дальше, а к этому ребёнку вернись в паузе. Группа не должна ждать одного.</p>
+        </div>
+      </div>
+      <div class="golden-rule">
+        <div class="rule-icon">🧰</div>
+        <div>
+          <h4>Аварийный чемоданчик</h4>
+          <p>На рабочем столе всегда должен быть открыт текстовый документ: все ссылки урока, промпты-заготовки на английском и ссылки на резервные папки (Google Диск). Если у ребёнка не работает сайт — дублируй ссылку в чат за 1 секунду.</p>
+        </div>
+      </div>
+      <div class="golden-rule">
+        <div class="rule-icon">🎭</div>
+        <div>
+          <h4>Урок-дубль (Ролевая игра)</h4>
+          <p>Перед стартом проведи симуляцию в Zoom. Пусть коллега сыграет роль капризного пятиклассника, а ты проведёшь 15-минутный кусок урока. Это снимет страх перед реальной группой.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- STAGE 5 -->
+  <div class="stage">
+    <div class="stage-header">
+      <span class="stage-num purple">ЭТАП 05</span>
+      <span class="stage-title">Навигация по КТП — Карта квестов</span>
+    </div>
+
+    <div class="card" style="margin-bottom: 20px;">
+      <div class="card-title">Что такое КТП в этом курсе</div>
+      <p>Календарно-тематический план — это не жёсткий рельсовый сценарий, а <strong>карта квестов</strong>. Задачи внутри делятся на три концептуальных типа.</p>
+    </div>
+
+    <div class="ktp-grid">
+      <div class="ktp-card">
+        <div class="ktp-icon">✨</div>
+        <div class="ktp-type">Тип 1</div>
+        <h4>Генеративные задачи</h4>
+        <p>Создай с нуля. Фокус на креативе — ученик придумывает идею, ИИ исполняет.</p>
+      </div>
+      <div class="ktp-card">
+        <div class="ktp-icon">✂️</div>
+        <div class="ktp-type">Тип 2</div>
+        <h4>Редакторские задачи</h4>
+        <p>Почини или улучши. Ученик выступает редактором плохого текста или видео. Важна точность ограничений в промпте.</p>
+      </div>
+      <div class="ktp-card">
+        <div class="ktp-icon">⚙️</div>
+        <div class="ktp-type">Тип 3</div>
+        <h4>Технические задачи</h4>
+        <p>Интеграция — перенос данных из одной нейросети в другую (Qwen → Speechma → монтаж). Фокус на форматах и таймингах.</p>
+      </div>
+    </div>
+
+    <!-- FINAL CTA -->
+    <div class="final-cta">
+      <div class="rocket">🚀</div>
+      <h3>Главная задача до первого эфира</h3>
+      <p>Открывай КТП, бери случайный урок и проходи его сам от лица ученика. Ломай логику, тестируй платформы-аналоги. <strong>Чем больше ошибок ты совершишь на тесте — тем увереннее ты будешь в классе!</strong></p>
+      <a class="video-link" href="https://docs.google.com/document/d/1iGaxCZtwljUxqtzB2ZF7pMuZEIIsSyORHoTgvxOZll0/edit?usp=drive_link" target="_blank" style="margin-top: 20px; display: inline-flex; color: var(--purple); border-color: rgba(155,93,229,0.35);">
+        📄 Открыть КТП
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Scroll reveal animation
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.stage, .rule-card, .tool-category, .hw-card, .check-item, .anatomy-card, .prompt-type, .age-card, .golden-rule, .ktp-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(18px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
