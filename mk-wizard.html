@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Game Maker — Создай свою игру</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Inter:wght@400;500;600&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#0a0e1a;
+  --surface:#111827;
+  --surface2:#1a2235;
+  --border:rgba(99,179,237,0.15);
+  --border-bright:rgba(99,179,237,0.4);
+  --cyan:#00d4ff;
+  --cyan-dim:rgba(0,212,255,0.15);
+  --purple:#a855f7;
+  --purple-dim:rgba(168,85,247,0.15);
+  --green:#00ffaa;
+  --green-dim:rgba(0,255,170,0.12);
+  --yellow:#fbbf24;
+  --text:#e2e8f0;
+  --muted:#64748b;
+  --radius:16px;
+  --radius-sm:10px;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  padding-bottom:80px;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 0%, rgba(0,212,255,0.06) 0%, transparent 60%);
+}
+
+/* HEADER */
+.header{text-align:center;padding:44px 20px 32px;}
+.logo-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--border);
+  border-radius:40px;padding:6px 18px;margin-bottom:22px;
+}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
+.logo-text{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--text);text-transform:uppercase;}
+.header-title{
+  font-family:'Nunito',sans-serif;
+  font-size:clamp(26px,5vw,42px);font-weight:900;
+  line-height:1.15;margin-bottom:10px;
+  background:linear-gradient(135deg,#fff 0%,var(--cyan) 60%,var(--purple) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.header-sub{color:var(--muted);font-size:15px;max-width:480px;margin:0 auto;line-height:1.6;}
+
+/* PROGRESS */
+.progress-wrap{max-width:820px;margin:0 auto 32px;padding:0 20px;}
+.progress-track{
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:20px;padding:16px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;
+}
+.progress-track::before{
+  content:'';position:absolute;
+  top:50%;left:28px;right:28px;height:1px;
+  background:rgba(255,255,255,0.06);transform:translateY(-50%);z-index:0;
+}
+.prog-step{display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;z-index:1;}
+.prog-dot{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--surface2);border:1.5px solid rgba(255,255,255,0.1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:var(--muted);transition:all 0.3s;
+}
+.prog-step.active .prog-dot{
+  background:rgba(0,212,255,0.15);border-color:var(--cyan);
+  color:var(--cyan);box-shadow:0 0 16px rgba(0,212,255,0.3);
+}
+.prog-step.done .prog-dot{
+  background:rgba(0,255,170,0.15);border-color:var(--green);
+  color:var(--green);
+}
+.prog-label{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap;}
+.prog-step.active .prog-label{color:var(--cyan);}
+.prog-step.done .prog-label{color:var(--green);}
+
+/* CONTAINER */
+.container{max-width:820px;margin:0 auto;padding:0 20px;}
+
+/* CARD */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:32px 36px;
+  animation:fadeUp 0.3s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.step-panel{display:none;}
+.step-panel.active{display:block;}
+
+/* STEP HEADER */
+.step-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:6px;opacity:0.8;}
+.step-title{font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:8px;}
+.step-desc{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:26px;}
+
+/* THEME GRID */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:26px;}
+.theme-card{
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:20px 14px;
+  cursor:pointer;transition:all 0.2s;
+  text-align:center;
+  background:var(--surface2);
+  position:relative;overflow:hidden;
+}
+.theme-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--accent-grad,linear-gradient(90deg,var(--cyan),var(--purple)));
+  opacity:0;transition:opacity 0.2s;
+}
+.theme-card:hover{border-color:var(--border-bright);transform:translateY(-2px);}
+.theme-card:hover::before{opacity:1;}
+.theme-card.selected{border-color:var(--cyan);background:rgba(0,212,255,0.06);}
+.theme-card.selected::before{opacity:1;}
+.theme-card.city{--accent-grad:linear-gradient(90deg,#fbbf24,#f97316);}
+.theme-card.mountain{--accent-grad:linear-gradient(90deg,#66ccff,#a5f3fc);}
+.theme-card.cyber{--accent-grad:linear-gradient(90deg,#a855f7,#ec4899);}
+.theme-check{
+  position:absolute;top:8px;right:8px;width:18px;height:18px;
+  border-radius:50%;background:var(--cyan);
+  color:#000;font-size:10px;font-weight:800;
+  display:none;align-items:center;justify-content:center;
+}
+.theme-card.selected .theme-check{display:flex;}
+.theme-icon{font-size:28px;margin-bottom:8px;}
+.theme-name{font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:0.5px;}
+.theme-card.city .theme-name{color:#fbbf24;}
+.theme-card.mountain .theme-name{color:#66ccff;}
+.theme-card.cyber .theme-name{color:#a855f7;}
+.theme-sub{font-size:11px;color:var(--muted);line-height:1.4;}
+
+/* SECTION LABEL */
+.section-label{
+  font-size:12px;font-weight:700;color:var(--text);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.section-label .tag{
+  background:rgba(0,212,255,0.12);color:var(--cyan);
+  padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid rgba(0,212,255,0.2);
+}
+
+/* COLOR ROW */
+.color-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
+.color-btn{
+  width:36px;height:36px;border-radius:50%;
+  border:2px solid transparent;cursor:pointer;transition:all 0.2s;position:relative;
+}
+.color-btn:hover{transform:scale(1.12);}
+.color-btn.selected{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,0.15);}
+.color-btn .ck{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8);}
+.color-btn.selected .ck{display:flex;}
+
+/* OPT PILLS */
+.opts-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.opt-btn{
+  padding:7px 15px;border-radius:30px;
+  border:1px solid rgba(255,255,255,0.1);
+  background:var(--surface2);color:var(--muted);
+  font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;
+  font-family:'Inter',sans-serif;
+}
+.opt-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+.opt-btn.selected{background:rgba(0,212,255,0.12);border-color:var(--cyan);color:var(--cyan);}
+
+/* PROMPT BOX */
+.prompt-wrap{
+  background:rgba(0,0,0,0.3);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:var(--radius-sm);
+  padding:16px;margin-bottom:14px;
+  max-height:220px;overflow-y:auto;
+}
+.prompt-text{
+  font-family:monospace;font-size:12.5px;line-height:1.7;
+  color:#a5b4c8;white-space:pre-wrap;word-break:break-word;min-height:60px;
+}
+.prompt-placeholder{color:var(--muted);font-style:italic;font-family:'Inter',sans-serif;}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:11px 20px;border-radius:40px;
+  border:none;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;
+  font-family:'Nunito',sans-serif;text-decoration:none;
+  white-space:nowrap;
+}
+.btn:hover{transform:translateY(-1px);}
+.btn:active{transform:scale(0.98);}
+.btn-primary{background:linear-gradient(135deg,#0ea5e9,#00d4ff);color:#000;box-shadow:0 4px 16px rgba(0,212,255,0.25);}
+.btn-primary:disabled{opacity:0.35;pointer-events:none;}
+.btn-ghost{background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.1);}
+.btn-ghost:hover{border-color:var(--border-bright);}
+.btn-success{background:linear-gradient(135deg,#00c875,#00ffaa);color:#000;box-shadow:0 4px 16px rgba(0,255,170,0.25);}
+.btn-purple{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;box-shadow:0 4px 16px rgba(168,85,247,0.25);}
+
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px;}
+
+/* LINK CARD */
+.link-card{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:14px 18px;margin-bottom:12px;
+  text-decoration:none;transition:all 0.2s;color:var(--text);
+}
+.link-card:hover{border-color:var(--border-bright);background:rgba(0,212,255,0.04);}
+.link-card-left{display:flex;align-items:center;gap:12px;}
+.link-icon{font-size:22px;}
+.link-title{font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;color:#fff;}
+.link-sub{font-size:12px;color:var(--muted);margin-top:1px;}
+.link-go{
+  background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.25);
+  color:var(--cyan);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;
+  font-family:'Nunito',sans-serif;
+}
+
+/* INSTR STEPS */
+.instr-list{margin-bottom:18px;}
+.instr-step{
+  display:flex;gap:12px;align-items:flex-start;
+  padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.instr-step:last-child{border-bottom:none;}
+.instr-num{
+  flex-shrink:0;width:26px;height:26px;border-radius:50%;
+  background:rgba(0,212,255,0.1);color:var(--cyan);
+  font-weight:800;font-size:12px;
+  display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;
+}
+.instr-body{font-size:14px;line-height:1.6;color:var(--text);padding-top:3px;}
+.instr-body strong{color:#fff;}
+.warn-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);
+  color:#f87171;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;margin-top:5px;
+}
+
+/* PARALLEL BANNER */
+.parallel-banner{
+  background:rgba(0,255,170,0.06);
+  border:1px solid rgba(0,255,170,0.2);
+  border-radius:var(--radius-sm);
+  padding:14px 18px;margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.parallel-banner .pb-icon{font-size:22px;flex-shrink:0;}
+.parallel-banner .pb-text{font-size:13px;color:var(--green);font-weight:600;line-height:1.5;}
+
+/* DROPZONE */
+.dropzone{
+  border:1.5px dashed rgba(255,255,255,0.12);
+  border-radius:var(--radius-sm);
+  padding:32px 20px;text-align:center;
+  cursor:pointer;transition:all 0.2s;
+  background:rgba(0,0,0,0.2);margin-bottom:14px;
+}
+.dropzone:hover,.dropzone.drag{border-color:var(--cyan);background:rgba(0,212,255,0.04);}
+.dropzone.loaded{border-style:solid;border-color:var(--green);background:rgba(0,255,170,0.04);}
+.dz-icon{font-size:36px;margin-bottom:8px;}
+.dz-text{font-size:14px;color:var(--muted);line-height:1.5;}
+.dz-success{font-size:15px;font-weight:700;color:var(--green);margin-bottom:3px;}
+
+/* CODE AREA */
+.code-area{
+  width:100%;min-height:150px;
+  background:rgba(0,0,0,0.3);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:var(--radius-sm);
+  padding:14px;color:#a5b4c8;
+  font-family:monospace;font-size:12px;
+  resize:vertical;outline:none;transition:border-color 0.2s;margin-bottom:12px;
+}
+.code-area:focus{border-color:var(--cyan);}
+
+/* DIVIDER */
+.divider{height:1px;background:rgba(255,255,255,0.06);margin:22px 0;}
+
+/* SUCCESS */
+.success-wrap{text-align:center;padding:20px 0;}
+.success-icon{font-size:60px;margin-bottom:16px;}
+.success-title{
+  font-family:'Nunito',sans-serif;font-size:26px;font-weight:900;
+  color:#fff;margin-bottom:8px;
+}
+.success-sub{color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:26px;max-width:440px;margin-left:auto;margin-right:auto;}
+.vercel-card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:20px;text-align:left;margin-bottom:18px;
+}
+.vercel-card-title{font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;color:#fff;margin-bottom:14px;}
+
+/* BADGE */
+.theme-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;
+  margin-left:8px;vertical-align:middle;
+}
+.badge-city{background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.25);}
+.badge-mountain{background:rgba(102,204,255,0.12);color:#66ccff;border:1px solid rgba(102,204,255,0.25);}
+.badge-cyber{background:rgba(168,85,247,0.12);color:#a855f7;border:1px solid rgba(168,85,247,0.25);}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:30px;padding:10px 22px;
+  font-size:14px;font-weight:600;color:var(--green);
+  opacity:0;transition:all 0.3s;pointer-events:none;z-index:100;
+  white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:580px){
+  .theme-grid{grid-template-columns:1fr;}
+  .card{padding:22px 16px;}
+  .container{padding:0 12px;}
+  .progress-wrap{padding:0 12px;}
+  .progress-track{padding:12px 14px;}
+  .prog-label{display:none;}
+  .btn-row{flex-direction:column;}
+  .btn{width:100%;justify-content:center;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-pill">
+    <div class="logo-dot"></div>
+    <div class="logo-text">Game Maker · AI · Тетрика</div>
+  </div>
+  <div class="header-title">Создай свою 3D‑игру<br>с помощью ИИ</div>
+  <div class="header-sub">Следуй шагам по порядку — каждый следующий открывается после предыдущего</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-track">
+    <div class="prog-step active" id="prog-1"><div class="prog-dot">1</div><div class="prog-label">Тема</div></div>
+    <div class="prog-step" id="prog-2"><div class="prog-dot">2</div><div class="prog-label">Персонаж</div></div>
+    <div class="prog-step" id="prog-3"><div class="prog-dot">3</div><div class="prog-label">3D + Код</div></div>
+    <div class="prog-step" id="prog-4"><div class="prog-dot">4</div><div class="prog-label">Сборка</div></div>
+    <div class="prog-step" id="prog-5"><div class="prog-dot">5</div><div class="prog-label">Готово!</div></div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ШАГ 1: ТЕМА -->
+<div class="step-panel active" id="step-1">
+<div class="card">
+  <div class="step-eyebrow">Шаг 1 из 5</div>
+  <div class="step-title">Выбери тему игры</div>
+  <div class="step-desc">От темы зависит всё: мир, атмосфера, транспорт и препятствия.</div>
+
+  <div class="theme-grid">
+    <div class="theme-card city" onclick="selectTheme('city',this)">
+      <div class="theme-check">✓</div>
+      <div class="theme-icon">🏙️</div>
+      <div class="theme-name">CITY RUSH</div>
+      <div class="theme-sub">Дневной город · Скейтборд<br>Небоскрёбы, машины, заборы</div>
+    </div>
+    <div class="theme-card mountain" onclick="selectTheme('mountain',this)">
+      <div class="theme-check">✓</div>
+      <div class="theme-icon">🏔️</div>
+      <div class="theme-name">MOUNTAIN RUSH</div>
+      <div class="theme-sub">Горы · Сноуборд<br>Снег, скалы, ёлки</div>
+    </div>
+    <div class="theme-card cyber" onclick="selectTheme('cyber',this)">
+      <div class="theme-check">✓</div>
+      <div class="theme-icon">🌆</div>
+      <div class="theme-name">NULL.EXE</div>
+      <div class="theme-sub">Ночной неон · Ховерборд<br>Киберпанк, дроны, барьеры</div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="goStep(2)" id="btn1" disabled>Далее →</button>
+</div>
+</div>
+
+<!-- ШАГ 2: ПЕРСОНАЖ -->
+<div class="step-panel" id="step-2">
+<div class="card">
+  <div class="step-eyebrow">Шаг 2 из 5</div>
+  <div class="step-title">Настрой персонажа <span id="badge2"></span></div>
+  <div class="step-desc">Выбери параметры — сайт сам сгенерирует промпт для Leonardo AI на английском.</div>
+
+  <div class="section-label">🎨 Цвет куртки <span class="tag">выбери один</span></div>
+  <div class="color-row" id="color-picker">
+    <div class="color-btn selected" style="background:#EF4444" data-color="red" onclick="pickColor(this)"><div class="ck">✓</div></div>
+    <div class="color-btn" style="background:#3B82F6" data-color="blue" onclick="pickColor(this)"><div class="ck">✓</div></div>
+    <div class="color-btn" style="background:#22C55E" data-color="green" onclick="pickColor(this)"><div class="ck">✓</div></div>
+    <div class="color-btn" style="background:#EAB308" data-color="yellow" onclick="pickColor(this)"><div class="ck" style="color:#000">✓</div></div>
+    <div class="color-btn" style="background:#A855F7" data-color="purple" onclick="pickColor(this)"><div class="ck">✓</div></div>
+    <div class="color-btn" style="background:#F97316" data-color="orange" onclick="pickColor(this)"><div class="ck">✓</div></div>
+    <div class="color-btn" style="background:#e2e8f0;border:2px solid #475569" data-color="white" onclick="pickColor(this)"><div class="ck" style="color:#000">✓</div></div>
+    <div class="color-btn" style="background:#1E293B;border:2px solid #475569" data-color="black" onclick="pickColor(this)"><div class="ck">✓</div></div>
+    <div class="color-btn" style="background:#EC4899" data-color="pink" onclick="pickColor(this)"><div class="ck">✓</div></div>
+  </div>
+
+  <div class="section-label">🧢 Аксессуар <span class="tag">выбери один</span></div>
+  <div class="opts-row" id="acc-picker">
+    <button class="opt-btn selected" data-val="baseball cap" onclick="pickOpt(this,'acc')">Бейсболка</button>
+    <button class="opt-btn" data-val="helmet" onclick="pickOpt(this,'acc')">Шлем</button>
+    <button class="opt-btn" data-val="hoodie with hood up" onclick="pickOpt(this,'acc')">Худи</button>
+    <button class="opt-btn" data-val="cool sunglasses" onclick="pickOpt(this,'acc')">Очки</button>
+    <button class="opt-btn" data-val="headphones around neck" onclick="pickOpt(this,'acc')">Наушники</button>
+    <button class="opt-btn" data-val="beanie hat" onclick="pickOpt(this,'acc')">Шапка</button>
+  </div>
+
+  <div class="section-label">⚡ Стиль <span class="tag">выбери один</span></div>
+  <div class="opts-row" id="style-picker">
+    <button class="opt-btn selected" data-val="Roblox" onclick="pickOpt(this,'sty')">🟥 Roblox</button>
+    <button class="opt-btn" data-val="Cartoon3D" onclick="pickOpt(this,'sty')">🎨 Cartoon 3D / Pixar</button>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-label">✨ Промпт для Leonardo AI</div>
+  <div class="prompt-wrap"><div class="prompt-text" id="char-prompt"><span class="prompt-placeholder">Выбери параметры выше — промпт появится здесь</span></div></div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="copyText('char-prompt','charPromptText')">📋 Скопировать промпт</button>
+    <a href="https://app.leonardo.ai/" target="_blank" class="btn btn-ghost">🎨 Leonardo AI →</a>
+  </div>
+  <div class="divider"></div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="goStep(1)">← Назад</button>
+    <button class="btn btn-primary" onclick="goStep(3)">Готово, далее →</button>
+  </div>
+</div>
+</div>
+
+<!-- ШАГ 3: 3D + КОД ПАРАЛЛЕЛЬНО -->
+<div class="step-panel" id="step-3">
+<div class="card">
+  <div class="step-eyebrow">Шаг 3 из 5</div>
+  <div class="step-title">3D-модель + Код игры <span id="badge3"></span></div>
+  <div class="step-desc">Запускаем оба процесса параллельно — пока Meshy генерирует модель, идём в Qwen за кодом.</div>
+
+  <!-- PART A: MESHY -->
+  <div class="section-label" style="margin-bottom:10px">🧊 Часть A — Создаём 3D-модель в Meshy</div>
+
+  <a href="https://www.meshy.ai/" target="_blank" class="link-card">
+    <div class="link-card-left"><div class="link-icon">🧊</div><div><div class="link-title">Открыть Meshy.ai</div><div class="link-sub">PNG → 3D-модель в формате GLB</div></div></div>
+    <div class="link-go">Открыть →</div>
+  </a>
+
+  <div class="instr-list">
+    <div class="instr-step"><div class="instr-num">1</div><div class="instr-body">Нажми <strong>«Image to 3D»</strong> в левом меню</div></div>
+    <div class="instr-step"><div class="instr-num">2</div><div class="instr-body">Загрузи PNG персонажа из Leonardo AI</div></div>
+    <div class="instr-step"><div class="instr-num">3</div><div class="instr-body">Выбери <strong>Mesh Quality → Mesh 5</strong> (не Mesh 6!)<br><span class="warn-pill">⚠️ Mesh 6 нельзя скачать на бесплатном тарифе</span></div></div>
+    <div class="instr-step"><div class="instr-num">4</div><div class="instr-body">Нажми <strong>«Generate»</strong> — и сразу переходи к Части B ниже, не жди!</div></div>
+  </div>
+
+  <div class="parallel-banner">
+    <div class="pb-icon">⚡</div>
+    <div class="pb-text">Meshy генерирует 2–4 минуты — пока ждёшь, делаем код игры. Не закрывай вкладку Meshy!</div>
+  </div>
+
+  <!-- PART B: QWEN -->
+  <div class="section-label" style="margin-bottom:10px;margin-top:4px;">🤖 Часть B — Генерируем код игры в Qwen</div>
+
+  <a href="https://chat.qwenlm.ai/" target="_blank" class="link-card">
+    <div class="link-card-left"><div class="link-icon">🤖</div><div><div class="link-title">Открыть Qwen</div><div class="link-sub">Регистрация не нужна — сразу работаем</div></div></div>
+    <div class="link-go">Открыть →</div>
+  </a>
+
+  <div class="section-label">📋 Промпт для Qwen</div>
+  <div class="prompt-wrap"><div class="prompt-text" id="game-prompt"><span class="prompt-placeholder">Тема не выбрана</span></div></div>
+  <div class="btn-row" style="margin-top:0;margin-bottom:18px;">
+    <button class="btn btn-primary" onclick="copyText('game-prompt','gamePromptText')">📋 Скопировать промпт для Qwen</button>
+  </div>
+
+  <div class="instr-list">
+    <div class="instr-step"><div class="instr-num">1</div><div class="instr-body">Вставь промпт в Qwen и нажми Enter</div></div>
+    <div class="instr-step"><div class="instr-num">2</div><div class="instr-body">Дождись кода (1–3 мин) — нажми <strong>Copy</strong> в правом углу блока с кодом</div></div>
+    <div class="instr-step"><div class="instr-num">3</div><div class="instr-body">Вернись в Meshy — выбери лучший из 4 вариантов модели, нажми <strong>Texture → Generate Texture</strong></div></div>
+    <div class="instr-step"><div class="instr-num">4</div><div class="instr-body">Когда текстуры готовы — нажми <strong>Download → GLB</strong></div></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="goStep(2)">← Назад</button>
+    <button class="btn btn-primary" onclick="goStep(4)">Всё готово, далее →</button>
+  </div>
+</div>
+</div>
+
+<!-- ШАГ 4: СБОРКА -->
+<div class="step-panel" id="step-4">
+<div class="card">
+  <div class="step-eyebrow">Шаг 4 из 5</div>
+  <div class="step-title">Собираем игру <span id="badge4"></span></div>
+  <div class="step-desc">Загрузи GLB-модель и вставь код — сайт упакует всё в готовый архив.</div>
+
+  <div class="section-label">📂 1. Загрузи 3D-модель (.glb)</div>
+  <div class="dropzone" id="dropzone" onclick="document.getElementById('glb-inp').click()">
+    <div class="dz-icon" id="dz-icon">📂</div>
+    <div id="dz-text" class="dz-text">Нажми или перетащи .glb файл из Meshy</div>
+  </div>
+  <input type="file" id="glb-inp" accept=".glb" style="display:none" onchange="handleGLB(this)">
+
+  <div class="section-label" style="margin-top:20px;">💻 2. Вставь код из Qwen</div>
+  <div style="color:var(--muted);font-size:13px;margin-bottom:10px;">Скопируй весь HTML-код который написал Qwen и вставь сюда</div>
+  <textarea class="code-area" id="code-in" placeholder="<!DOCTYPE html>&#10;<html>&#10;  ...вставь сюда весь код из Qwen..." oninput="checkCode()"></textarea>
+
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="goStep(3)">← Назад</button>
+    <button class="btn btn-success" id="btn-build" onclick="buildZip()" disabled>⬇️ Скачать game.zip</button>
+  </div>
+</div>
+</div>
+
+<!-- ШАГ 5: ГОТОВО -->
+<div class="step-panel" id="step-5">
+<div class="card">
+  <div class="success-wrap">
+    <div class="success-icon">🎮</div>
+    <div class="success-title">Игра готова!</div>
+    <div class="success-sub">Осталось опубликовать в интернете — получишь ссылку, которую можно скинуть другу прямо сейчас.</div>
+
+    <div class="vercel-card">
+      <div class="vercel-card-title">🚀 Как опубликовать на Vercel</div>
+      <div class="instr-list" style="margin-bottom:0">
+        <div class="instr-step"><div class="instr-num">1</div><div class="instr-body">Открой Vercel по кнопке ниже</div></div>
+        <div class="instr-step"><div class="instr-num">2</div><div class="instr-body">Нажми <strong>«Add New → Project»</strong></div></div>
+        <div class="instr-step"><div class="instr-num">3</div><div class="instr-body">Перетащи <strong>game.zip</strong> на страницу Vercel</div></div>
+        <div class="instr-step" style="border:none"><div class="instr-num">4</div><div class="instr-body">Нажми <strong>«Deploy»</strong> — через 30 секунд получишь ссылку!</div></div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="justify-content:center">
+      <a href="https://vercel.com/new" target="_blank" class="btn btn-primary">🚀 Открыть Vercel →</a>
+      <button class="btn btn-ghost" onclick="buildZip()">⬇️ Скачать снова</button>
+    </div>
+  </div>
+</div>
+</div>
+
+</div><!-- /container -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const S = {
+  theme: null, color:'red', acc:'baseball cap', sty:'Roblox',
+  glbData: null, charPromptText:'', gamePromptText:''
+};
+
+const STYLE_MAP = {
+  Roblox:'blocky Roblox-style character, plastic smooth texture, square blocky head and body like a Roblox avatar, bright colorful outfit',
+  Cartoon3D:'stylized cartoon 3D character, Pixar/Disney style, slightly oversized head, big expressive eyes, smooth clean render'
+};
+
+const TRANSPORT_MAP = {city:'skateboard',mountain:'snowboard',cyber:'glowing hoverboard'};
+const TRANSPORT_RU = {city:'скейтборде',mountain:'сноуборде',cyber:'ховерборде'};
+
+const TD = {
+  city:{label:'City Rush',emoji:'🏙️',cls:'badge-city'},
+  mountain:{label:'Mountain Rush',emoji:'🏔️',cls:'badge-mountain'},
+  cyber:{label:'Null.exe',emoji:'🌆',cls:'badge-cyber'}
+};
+
+// ===== ПРОМПТЫ ДЛЯ КОДА =====
+const GAME_PROMPTS = {
+city:`Ты — Senior 3D Web Developer и Game Designer. Твоя задача — написать полноценную 3D-игру в жанре "Endless Runner" на Three.js.
+
+Формат вывода:
+Строго ОДИН готовый к запуску файл index.html. Весь CSS, HTML и JavaScript (Three.js) должны внутри этого файла. Никаких заглушек вида // логика здесь или /* стили */ — пиши полный, рабочий и оптимизированный код.
+
+Визуальный стиль и Арт-дирекшн (КРИТИЧЕСКИ ВАЖНО):
+Игра должна выглядеть сочно, современно и детализировано, в стилистике светлого мегаполиса.
+Освещение и тени: Сцена должна быть дневной. Используй HemisphereLight (небо/земля), AmbientLight для заполнения и DirectionalLight (имитация солнца с теплым оттенком). Солнце должно следовать за игроком. Обязательно включи castShadow и receiveShadow для всех объектов. Добавь Fog (туман) в цвет фона (#87ceeb), чтобы мягко скрывать генерацию дороги вдалеке. Настрой ACESFilmicToneMapping.
+Окружение (Город): Дорога состоит из 3 полос. Асфальт темно-серый, по краям белые сплошные линии, между полосами — желтые пунктиры (используй emissive материалы). По краям дороги — бордюры и серые тротуары.
+Процедурные здания: За тротуарами генерируй здания разной высоты и ширины из палитры бежево-серых оттенков. На зданиях сделай горизонтальные полосы окон с легким синим свечением (emissive). Расставь вдоль дороги фонарные столбы с желтыми светящимися сферами-лампами на концах.
+Объекты: Препятствия — оранжевые/желтые блоки (низкие, чтобы перепрыгнуть, и высокие, чтобы обходить). Монетки — желтые цилиндры с metalness и emissive, которые вращаются вокруг своей оси.
+Частицы: При столкновении с препятствием должен происходить взрыв из десятков разлетающихся кубических частиц с гравитацией.
+
+Загрузка модели игрока (СТРОГИЕ ТРЕБОВАНИЯ):
+Герой уже есть. Используй GLTFLoader из официального CDN Three.js.
+Путь к файлу: player_game.glb (строго этот путь, лежать будет в корне).
+Модель нужно корректно отмасштабировать под высоту примерно 2.0 юнита. Вычисли bounding box модели через new THREE.Box3().setFromObject(model) и смести модель так, чтобы её НИЗ (минимальное значение Y из bounding box) находился точно на y=0. Сохрани это базовое смещение в переменную playerBaseY (например, state.playerBaseY = -box.min.y). Используй playerBaseY как "уровень земли" при прыжке и рестарте. Включи тени для всех мешей внутри модели.
+ВАЖНО: Разверни модель лицом ВПЕРЕД по направлению движения (по оси -Z). Попробуй player.rotation.y = Math.PI. Если модель смотрит не туда, экспериментируй с rotation.y (0, Math.PI/2, Math.PI, -Math.PI/2), чтобы персонаж смотрел вперед по дороге, а не на камеру или в сторону.
+Запусти анимацию (ищи в клипах названия 'run' или 'walk').
+Важно: Напиши fallback (создание капсулы), который сработает в блоке onError лоадера, чтобы игра не ломалась, если файл не найден. Для капсулы также установи playerBaseY равным её начальной позиции Y.
+
+Логика и Геймплей:
+3 полосы движения. Герой плавно перемещается между ними (с легким наклоном rotation.z при перестроении).
+Камера плавно следует за игроком сзади и чуть сверху, реагируя на смену полосы.
+Прыжок: при прыжке добавляй velocityY, применяй гравитацию. Проверка приземления: если player.position.y <= playerBaseY, то player.position.y = playerBaseY и сброс isJumping. При рестарте также устанавливай player.position.y = playerBaseY.
+Бесконечная генерация: переиспользуй (рециклинг) сегменты дороги и зданий, перенося их вперед, когда игрок их проезжает. Спавн препятствий и монет впереди.
+Увеличение скорости со временем до определенного лимита.
+Подсчет очков (зависят от пройденной дистанции и собранных монет).
+
+Управление:
+Клавиатура: Стрелки Влево/Вправо (или A/D) — смена полосы. Пробел или W/Стрелка вверх — прыжок (с физикой гравитации).
+Мобильные устройства: Слушатели touchstart / touchend для свайпов (влево/вправо для полос, вверх для прыжка).
+
+UI / Интерфейс:
+Поверх canvas наложи красивый HTML/CSS интерфейс.
+Используй современный стиль: backdrop-filter: blur(8px), полупрозрачные белые плашки, скругленные углы, жирные шрифты без засечек.
+HUD: слева — Score, по центру — счетчик монеток (с желтым кружочком-иконкой), справа — скорость (km/h).
+Оверлей старта и Game Over: поверх экрана градиентный фон (желто-оранжевый полупрозрачный), крупный стильный заголовок "CITY RUSH", итоговый счет и мигающая надпись "Нажми ПРОБЕЛ или тапни для рестарта". Экран загрузки с CSS-спиннером до готовности сцены.
+
+Сгенерируй только код, без лишних рассуждений.`,
+
+mountain:`Ты — Senior 3D Web Developer и Game Designer. Твоя задача — написать полноценную 3D-игру в жанре "Endless Runner" на Three.js.
+
+Формат вывода:
+Строго ОДИН готовый к запуску файл index.html. Весь CSS, HTML и JavaScript (Three.js) должны внутри этого файла. Никаких заглушек вида // логика здесь или /* стили */ — пиши полный, рабочий и оптимизированный код.
+
+Визуальный стиль и Арт-дирекшн (КРИТИЧЕСКИ ВАЖНО):
+ТЕМА: MOUNTAIN RUSH. Игра должна выглядеть сочно, современно и детализировано, в стилистике зимних заснеженных гор. Атмосфера свежести, холода, простора.
+Цветовая палитра:
+- Фон неба: холодный голубой #b0d4f1
+- Туман: белый, мягкий
+- Основные акценты: белый #ffffff, ледяной голубой #66ccff
+- Вторичные: серебристый, светло-серый, мягкий синий
+Освещение и тени: Сцена должна быть зимней и яркой. Используй HemisphereLight (небо #b0d4f1 / земля #ffffff, интенсивность высокая для эффекта отражения от снега), AmbientLight холодного оттенка (#cceeff) для заполнения и DirectionalLight (имитация зимнего солнца с холодным белым оттенком #ffffff). Солнце должно следовать за игроком. Обязательно включи castShadow и receiveShadow для всех объектов. Добавь Fog (туман) белого цвета (#e8f4ff), чтобы мягко скрывать генерацию трассы вдалеке и создать эффект снежной дымки. Настрой ACESFilmicToneMapping с exposure 1.3 для яркой зимней картинки.
+Окружение (Горная трасса): Дорога состоит из 3 полос. Поверхность — укатанный снег с легким голубоватым оттенком (#f0f8ff), с едва заметной текстурой следов. По краям дороги — деревянные ограждения в стиле горнолыжной трассы (коричневые столбики с красными флажками на вершинах, флажки должны слегка покачиваться). Между полосами — едва заметные параллельные следы лыж/саней.
+Процедурные ёлки: За ограждениями генерируй ёлки разной высоты и формы (используй конусы зеленого цвета #2d5016 с белыми "шапками" снега на вершинах). Ёлки должны быть процедурно вариативными: разные размеры, легкое случайное вращение, некоторые с наклоном. Расставь их группами, создавая ощущение леса.
+Объекты: - Препятствия: серые камни (DodecahedronGeometry или случайные формы с roughness 0.9), маленькие ёлки (которые можно объехать), ледяные глыбы (голубоватые полупрозрачные BoxGeometry с emissive #66ccff). Все препятствия с белыми "шапками" снега сверху (маленькие PlaneGeometry или дополнительные меши. Монетки — желтые цилиндры с metalness и emissive, которые вращаются вокруг своей оси.
+Частицы: При столкновении с препятствием должен происходить взрыв из десятков разлетающихся белых и голубых кубических частиц (снежная пыль и осколки льда) с гравитацией.
+
+Загрузка модели игрока (СТРОГИЕ ТРЕБОВАНИЯ):
+Герой уже есть. Используй GLTFLoader из официального CDN Three.js.
+Путь к файлу: player_game.glb (строго этот путь, лежать будет в корне).
+Модель нужно корректно отмасштабировать под высоту примерно 2.0 юнита. Вычисли bounding box модели через new THREE.Box3().setFromObject(model) и смести модель так, чтобы её НИЗ (минимальное значение Y из bounding box) находился точно на y=0. Сохрани это базовое смещение в переменную playerBaseY (например, state.playerBaseY = -box.min.y). Используй playerBaseY как "уровень земли" при прыжке и рестарте. Включи тени для всех мешей внутри модели.
+ВАЖНО: Разверни модель лицом ВПЕРЕД по направлению движения (по оси -Z). Попробуй player.rotation.y = Math.PI. Если модель смотрит не туда, экспериментируй с rotation.y (0, Math.PI/2, Math.PI, -Math.PI/2), чтобы персонаж смотрел вперед по дороге, а не на камеру или в сторону.
+Запусти анимацию (ищи в клипах названия 'run' или 'walk').
+Важно: Напиши fallback (создание капсулы), который сработает в блоке onError лоадера, чтобы игра не ломалась, если файл не найден. Для капсулы также установи playerBaseY равным её начальной позиции Y.
+
+Логика и Геймплей:
+3 полосы движения. Герой плавно перемещается между ними (с легким наклоном rotation.z при перестроении).
+Камера плавно следует за игроком сзади и чуть сверху, реагируя на смену полосы.
+Прыжок: при прыжке добавляй velocityY, применяй гравитацию. Проверка приземления: если player.position.y <= playerBaseY, то player.position.y = playerBaseY и сброс isJumping. При рестарте также устанавливай player.position.y = playerBaseY.
+Бесконечная генерация: переиспользуй (рециклинг) сегменты дороги и зданий, перенося их вперед, когда игрок их проезжает. Спавн препятствий и монет впереди.
+Увеличение скорости со временем до определенного лимита.
+Подсчет очков (зависят от пройденной дистанции и собранных монет).
+
+Управление:
+Клавиатура: Стрелки Влево/Вправо (или A/D) — смена полосы. Пробел или W/Стрелка вверх — прыжок (с физикой гравитации).
+Мобильные устройства: Слушатели touchstart / touchend для свайпов (влево/вправо для полос, вверх для прыжка).
+
+UI / Интерфейс:
+Поверх canvas наложи красивый HTML/CSS интерфейс.
+Используй современный стиль: backdrop-filter: blur(8px), полупрозрачные белые плашки, скругленные углы, жирные шрифты без засечек.
+HUD: слева — Score, по центру — счетчик монеток (с желтым кружочком-иконкой), справа — скорость (km/h).
+Оверлей старта и Game Over: поверх экрана градиентный фон (желто-оранжевый полупрозрачный), крупный стильный заголовок "CITY RUSH", итоговый счет и мигающая надпись "Нажми ПРОБЕЛ или тапни для рестарта". Экран загрузки с CSS-спиннером до готовности сцены.
+
+Сгенерируй только код, без лишних рассуждений`,
+
+cyber:`Ты — Senior 3D Web Developer и Game Designer. Твоя задача — написать полноценную 3D-игру в жанре "Endless Runner" на Three.js.
+
+Формат вывода:
+Строго ОДИН готовый к запуску файл index.html. Весь CSS, HTML и JavaScript (Three.js) должны внутри этого файла. Никаких заглушек — пиши полный, рабочий, оптимизированный код.
+
+ТЕМА: NULL.EXE — ночной неоновый киберпанк, цифровой мир, ховерборд.
+Фон: тёмно-синий #0a0a2e. Туман плотный тёмный. Акценты: пурпурный #cc44ff, циановый #00ffcc.
+Освещение: AmbientLight синий, DirectionalLight пурпурный, PointLight снизу ховерборда.
+Дорога: тёмная с пурпурными светящимися линиями. Стены по бокам с неоновыми барьерами.
+Препятствия: дроны и барьеры с пурпурным/красным emissive. Монеты: голографические чипы.
+Частицы: пурпурные и циановые при столкновении.
+Персонаж на ховерборде — тёмная доска с пурпурным свечением, парит над землёй.
+
+Загрузка модели: player_game.glb, GLTFLoader CDN, высота 2.0, playerBaseY, fallback капсула.
+3 полосы, прыжок с гравитацией, рост скорости, рециклинг сегментов, очки.
+Управление: клавиатура + свайпы. UI: тёмный стиль с неоновыми акцентами, HUD, старт/Game Over оверлей.
+
+Сгенерируй только код.`
+};
+
+function selectTheme(t, el){
+  document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); S.theme=t;
+  document.getElementById('btn1').disabled=false;
+}
+
+function pickColor(el){
+  document.querySelectorAll('#color-picker .color-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected'); S.color=el.dataset.color; buildCharPrompt();
+}
+
+function pickOpt(el,type){
+  const pid=type==='acc'?'acc-picker':'style-picker';
+  document.querySelectorAll(`#${pid} .opt-btn`).forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  if(type==='acc') S.acc=el.dataset.val; else S.sty=el.dataset.val;
+  buildCharPrompt();
+}
+
+function buildCharPrompt(){
+  if(!S.theme) return;
+  const transport=TRANSPORT_MAP[S.theme];
+  const transportRu=TRANSPORT_RU[S.theme];
+  const styleDesc=STYLE_MAP[S.sty]||S.sty;
+  const p=`A full-body character portrait, ${styleDesc}.
+
+The character wears a ${S.color} jacket with ${S.acc}.
+The character is riding a ${transport} — show the ${transport} clearly under their feet.
+Clean white background, no shadows, front-facing pose, arms slightly away from body.
+The character is a game hero ready to speed through the level on their ${transport}.
+
+Full body visible from head to toe including the ${transport}. High quality digital art.`;
+  S.charPromptText=p;
+  document.getElementById('char-prompt').textContent=p;
+}
+
+function buildGamePrompt(){
+  if(!S.theme) return;
+  const p=GAME_PROMPTS[S.theme]||'';
+  S.gamePromptText=p;
+  const el=document.getElementById('game-prompt');
+  if(el) el.textContent=p;
+}
+
+function goStep(n){
+  if(n===2){ buildCharPrompt(); setBadge('badge2'); }
+  if(n===3){ buildGamePrompt(); setBadge('badge3'); }
+  if(n===4){ setBadge('badge4'); }
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('step-'+n).classList.add('active');
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('prog-'+i);
+    el.classList.remove('active','done');
+    if(i<n) el.classList.add('done');
+    if(i===n) el.classList.add('active');
+    const dot=el.querySelector('.prog-dot');
+    if(i<n) dot.textContent='✓';
+    else dot.textContent=i;
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function setBadge(id){
+  if(!S.theme) return;
+  const td=TD[S.theme];
+  const el=document.getElementById(id);
+  if(el) el.innerHTML=`<span class="theme-badge ${td.cls}">${td.emoji} ${td.label}</span>`;
+}
+
+function handleGLB(inp){
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    S.glbData=e.target.result;
+    const dz=document.getElementById('dropzone');
+    dz.classList.add('loaded');
+    document.getElementById('dz-icon').textContent='✅';
+    document.getElementById('dz-text').innerHTML=`<div class="dz-success">${f.name} загружен!</div><div style="font-size:12px;color:var(--muted)">Будет переименован в player_game.glb</div>`;
+    checkBuild();
+  };
+  r.readAsArrayBuffer(f);
+}
+
+const dz=document.getElementById('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.name.endsWith('.glb')){
+    const dt=new DataTransfer();dt.items.add(f);
+    document.getElementById('glb-inp').files=dt.files;
+    handleGLB(document.getElementById('glb-inp'));
+  }
+});
+
+function checkCode(){checkBuild();}
+function checkBuild(){
+  const code=document.getElementById('code-in').value.trim();
+  const ok=S.glbData&&code.length>200&&code.includes('<html');
+  document.getElementById('btn-build').disabled=!ok;
+}
+
+async function buildZip(){
+  const code=document.getElementById('code-in').value.trim();
+  if(!code||!S.glbData){showToast('⚠️ Нужен код и модель!');return;}
+  const zip=new JSZip();
+  zip.file('index.html',code);
+  zip.file('player_game.glb',S.glbData);
+  const blob=await zip.generateAsync({type:'blob'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='game.zip';a.click();
+  URL.revokeObjectURL(url);
+  goStep(5);
+}
+
+function copyText(id,stateKey){
+  const text=S[stateKey]||document.getElementById(id).textContent;
+  if(!text||text.trim()===''||text.includes('не выбрана')||text.includes('появится здесь')){
+    showToast('⚠️ Сначала настрой параметры!');return;
+  }
+  const copy=t=>{
+    const ta=document.createElement('textarea');
+    ta.value=t;ta.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    try{document.execCommand('copy');showToast('✓ Скопировано!');}
+    catch{showToast('⚠️ Скопируй вручную из поля');}
+    document.body.removeChild(ta);
+  };
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(text).then(()=>showToast('✓ Скопировано!')).catch(()=>copy(text));
+  } else {copy(text);}
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
